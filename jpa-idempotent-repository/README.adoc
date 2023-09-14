@@ -1,31 +1,18 @@
-= File consumer with Bindy & FTP: A Camel Quarkus example
-:cq-example-description: An example that shows how to consume CSV files, marshal & unmarshal the data and send it onwards via FTP
+= JPA idempotent repository: A Camel Quarkus example
+:cq-example-description: An example that shows how to consume a message only once, even when the message is delivered multiple times
 
 {cq-description}
 
 TIP: Check the https://camel.apache.org/camel-quarkus/latest/first-steps.html[Camel Quarkus User guide] for prerequisites
 and other general information.
 
-
 == Prerequisites
 
-The example application requires a running FTP server. For simplicity, you can start one with Docker.
-
-[source,shell]
-----
-docker run -ti --rm -p 2222:2222 \
-    -e PASSWORD_ACCESS=true \
-    -e USER_NAME=ftpuser \
-    -e USER_PASSWORD=ftppassword \
-    -e DOCKER_MODS=linuxserver/mods:openssh-server-openssh-client \
-    linuxserver/openssh-server
-----
-
-If you prefer to use a different server, then the properties prefixed with `ftp.` in `src/main/resources/application.properties` can be adjusted for this purpose.
+@TODO: Do we have any pre-requisites ?
 
 == Start in Development mode
 
-Ensure the aforementioned FTP server is running and do the following to run the application in development mode.
+Ensure prerequisites are done, if needed and then execute.
 
 [source,shell]
 ----
@@ -39,37 +26,12 @@ TIP: Please refer to the Development mode section of
 https://camel.apache.org/camel-quarkus/latest/first-steps.html#_development_mode[Camel Quarkus User guide] for more details.
 
 You should start to see some log messages appearing on the console.
-
-Every 10 seconds the timer component triggers the generation of some random 'books' data and creates a CSV file in a temporary directory with 100 entries.
-
-[source,shell]
-----
-[route1] (Camel (camel-1) thread #3 - timer://generateBooks) Generating randomized books CSV data
-----
-
-Next the CSV file is read by a file consumer and Bindy is used to marshal the individual data rows into `Book` objects.
+Note how a message with a given header named ID is consumed when presented the first to Camel.
+Then, notice that when a message is redelivered to Camel, it is simply discarded.
 
 [source,shell]
 ----
-[route2] (Camel (camel-1) thread #1 - file:///tmp/books) Reading books CSV data from 89A0EE24CB03A69-0000000000000000
-----
-
-Next the collection of `Book` objects is split into individual items and is aggregated based on the `genre` property.
-
-[source,shell]
-----
-[route3] (Camel (camel-1) thread #0 - AggregateTimeoutChecker) Processed 34 books for genre 'Action'
-[route3] (Camel (camel-1) thread #0 - AggregateTimeoutChecker) Processed 31 books for genre 'Crime'
-[route3] (Camel (camel-1) thread #0 - AggregateTimeoutChecker) Processed 35 books for genre 'Horror'
-----
-
-Finally, the aggregated book collections are unmarshalled back to CSV format and uploaded to the test FTP server.
-
-[source,shell]
-----
-[route4] (Camel (camel-1) thread #2 - seda://processed) Uploaded books-Action-89A0EE24CB03A69-0000000000000069.csv
-[route4] (Camel (camel-1) thread #2 - seda://processed) Uploaded books-Crime-89A0EE24CB03A69-0000000000000069.csv
-[route4] (Camel (camel-1) thread #2 - seda://processed) Uploaded books-Horror-89A0EE24CB03A69-0000000000000069.csv
+@TODO: put some logs here and explain them
 ----
 
 === Package and run the application
@@ -111,17 +73,11 @@ $ mvn clean package -DskipTests -Dquarkus.container-image.build=true
 
 If you are using a local development cluster like Kind or k3s, you can use host the container image on your local host. Or, with minikube, use the Docker daemon from the cluster virtual machine `eval $(minikube docker-env)`. Otherwise, you'll need to push the image to a registry of your choosing.
 
-Next apply the necessary resources to the cluster.
+Next apply the necessary resources to the cluster if needed.
 
 [source,shell]
 ----
 $ kubectl apply -f target/kubernetes/kubernetes.yml
-
-secret/ftp-credentials created
-service/camel-quarkus-examples-file-bindy-ftp created
-service/ftp-server created
-deployment.apps/camel-quarkus-examples-file-bindy-ftp created
-deployment.apps/ssh-server-deployment created
 ----
 
 TIP: You can build & deploy in one single step by doing `mvn clean package -DskipTests -Dquarkus.kubernetes.deploy=true`
@@ -133,8 +89,7 @@ Check pods are running.
 $ kubectl get pods
 
 NAME                                                     READY     STATUS    RESTARTS   AGE
-camel-quarkus-examples-file-bindy-ftp-5d48f4d85c-sjl8k   1/1       Running   0          21s
-ssh-server-deployment-5c667bccfc-52xfz                   1/1       Running   0          21s
+@TODO
 ----
 
 Tail the application logs.
@@ -148,7 +103,7 @@ To clean up do.
 
 [source,shell]
 ----
-$ kubectl delete all -l app.kubernetes.io/name=camel-quarkus-examples-file-bindy-ftp
+$ kubectl delete all -l app.kubernetes.io/name=camel-quarkus-examples-jpa-idempotent-repository
 ----
 
 [NOTE]

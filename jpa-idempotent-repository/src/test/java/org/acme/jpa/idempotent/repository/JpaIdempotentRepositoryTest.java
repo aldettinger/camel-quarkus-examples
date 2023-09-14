@@ -16,32 +16,28 @@
  */
 package org.acme.jpa.idempotent.repository;
 
-import io.quarkus.test.common.QuarkusTestResource;
+import java.util.concurrent.TimeUnit;
+
 import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
-import org.apache.camel.ProducerTemplate;
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 
+import static org.awaitility.Awaitility.await;
+
 @QuarkusTest
-@QuarkusTestResource(JpaIdempotentRepositoryTestResource.class)
 public class JpaIdempotentRepositoryTest {
 
-    @Inject
-    ProducerTemplate template;
-
     @Test
-    public void messagesWithSameHeaderShouldBeConsumedOnlyOnce() {
-        template.sendBodyAndHeader("direct:in", "body1", "ID", "id-1");
-        template.sendBodyAndHeader("direct:in", "body2", "ID", "id-2");
+    public void contentSetShouldStartWithOneThreeFive() {
 
-        template.sendBodyAndHeader("direct:in", "body3", "ID", "id-1");
-        template.sendBodyAndHeader("direct:in", "body4", "ID", "id-2");
+        await().atMost(10L, TimeUnit.SECONDS).pollDelay(500, TimeUnit.MILLISECONDS).until(() -> {
+            String contentSet = RestAssured
+                    .when()
+                    .get("/content-set")
+                    .then()
+                    .extract().asString();
 
-        try {
-            Thread.sleep(5*1000L);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+            return contentSet != null && contentSet.startsWith(",1,3,5");
+        });
     }
 }
