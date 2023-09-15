@@ -103,9 +103,15 @@
 			<groupId>org.apache.camel.quarkus</groupId>
 			<artifactId>camel-quarkus-timer</artifactId>
 		</dependency>
+		<!-- Note we added a dependency to quarkus-h2 to have an in memory database during dev mode -->
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-jdbc-h2</artifactId>
+		</dependency>
+		<!-- While in test and prod we use a derby database -->
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-jdbc-derby</artifactId>
 		</dependency>
 
 		<!-- Test -->
@@ -122,6 +128,11 @@
 		<dependency>
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

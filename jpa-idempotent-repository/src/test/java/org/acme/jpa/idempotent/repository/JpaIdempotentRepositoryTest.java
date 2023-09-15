@@ -18,6 +18,7 @@ package org.acme.jpa.idempotent.repository;
 
 import java.util.concurrent.TimeUnit;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
@@ -25,12 +26,13 @@ import org.junit.jupiter.api.Test;
 import static org.awaitility.Awaitility.await;
 
 @QuarkusTest
+@QuarkusTestResource(DerbyTestResource.class)
 public class JpaIdempotentRepositoryTest {
 
     @Test
     public void contentSetShouldStartWithOneThreeFive() {
 
-        await().atMost(10L, TimeUnit.SECONDS).pollDelay(500, TimeUnit.MILLISECONDS).until(() -> {
+        await().atMost(30L, TimeUnit.SECONDS).pollDelay(500, TimeUnit.MILLISECONDS).until(() -> {
             String contentSet = RestAssured
                     .when()
                     .get("/content-set")
